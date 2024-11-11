@@ -1,10 +1,10 @@
 import click
 from pathlib import Path
 from typing import Optional
-from ..config.loader import ConfigLoader
-from ..core.monitor import SourceMonitor
-from ..core.updater import UpdateManager
-from ..utils.logger import get_logger
+from undep.config.loader import ConfigLoader
+from undep.core.monitor import SourceMonitor
+from undep.core.updater import UpdateManager
+from undep.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -15,23 +15,25 @@ def cli():
     pass
 
 @cli.command()
-@click.option('--config', '-c', type=click.Path(exists=True), help='Path to config file')
-def init(config: Optional[str]):
-    """Initialize UnDep in the current directory"""
+@click.option('--project', '-p', type=click.Path(exists=True), 
+              help='Path to project directory (default: current directory)')
+def init(project: Optional[str]):
+    """Initialize UnDep in the project directory"""
     try:
-        config_path = Path(config) if config else None
-        config = ConfigLoader.load(config_path)
-        click.echo(f"Loaded configuration with {len(config.sources)} sources")
-    except Exception as e:
-        logger.error(f"Failed to initialize: {str(e)}")
+        project_path = Path(project) if project else None
+        config, project_root = ConfigLoader.load(project_path)
+        click.echo(f"Loaded configuration from {project_root}")
+        click.echo(f"Found {len(config.sources)} tracked sources")
+    except FileNotFoundError as e:
+        logger.error(str(e))
         raise click.ClickException(str(e))
 
 @cli.command()
 def check():
     """Check for updates in tracked sources"""
     try:
-        config = ConfigLoader.load()
-        monitor = SourceMonitor()
+        config, project_root = ConfigLoader.load()
+        monitor = SourceMonitor(project_root)
         
         for source in config.sources:
             diff = monitor.check_updates(source)
@@ -65,4 +67,4 @@ def update(yes: bool):
         raise click.ClickException(str(e))
 
 if __name__ == "__main__":
-    cli()
+    cli()           

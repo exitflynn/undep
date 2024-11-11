@@ -6,9 +6,15 @@ from ..config.models import SourceConfig
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
-
 class SourceMonitor:
-    def __init__(self, cache_dir: Path = Path(".undep/cache")):
+    def __init__(self, project_root: Path, cache_dir: Optional[Path] = None):
+        """
+        Initialize with project root and optional cache directory
+        If cache_dir is not provided, use .undep/cache in project root
+        """
+        self.project_root = project_root
+        if cache_dir is None:
+            cache_dir = project_root / ".undep" / "cache"
         self.cache_dir = cache_dir
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._repos: Dict[str, git.Repo] = {}

@@ -4,13 +4,12 @@ from ..config.models import SourceConfig
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
-
 class UpdateManager:
-    def __init__(self, workspace_dir: Path):
-        self.workspace_dir = workspace_dir
+    def __init__(self, project_root: Path):
+        self.project_root = project_root
         
     def apply_update(self, source: SourceConfig, diff: str) -> bool:
-        target_path = self.workspace_dir / source.target.path
+        target_path = self.project_root / source.target.path
         
         if not target_path.exists():
             logger.error(f"Target file not found: {target_path}")
@@ -18,6 +17,7 @@ class UpdateManager:
             
         # For Phase 1, we'll implement a simple file replacement
         # In later phases, we'll add more sophisticated merge strategies
+        # Will be adding AST backends via LibCST (for Python codebases atleast) later on
         try:
             # Backup the original file
             backup_path = target_path.with_suffix(target_path.suffix + '.bak')
