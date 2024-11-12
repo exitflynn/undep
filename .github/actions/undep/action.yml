@@ -1,0 +1,61 @@
+name: 'UnDep Dependency Check'
+description: 'Check and update indirect dependencies using UnDep'
+inputs:
+  auto_merge:
+    description: 'Automatically merge pull requests if all checks pass'
+    required: false
+    default: 'false'
+  github_token:
+    description: 'GitHub token for creating PRs'
+    required: true
+    default: ${{ github.token }}
+  config_path:
+    description: 'Path to UnDep configuration file'
+    required: false
+    default: '.undep.yml'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install UnDep
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install undep
+
+    - name: Check for updates
+      id: check
+      shell: bash
+      run: |
+        OUTPUT=$(undep check)
+        echo "has_updates=$(echo "$OUTPUT" | grep -q "Updates available" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+        echo "$OUTPUT"
+
+    - name: Apply updates
+      if: steps.check.outputs.has_updates == 'true'
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        undep update -y
+
+    - name: Create Pull Request
+      if: steps.check.outputs.has_updates == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ inputs.github_token }}
+        commit-message: "chore: update indirect dependencies via UnDep"
+        title: "⬆️ Update indirect dependencies"
+        body: |
+          This PR was automatically created by UnDep to update indirect dependencies.
+          Please review the changes carefully before merging.
+        branch: undep/dependency-updates
+        base: ${{ github.ref_name }}
+        labels: |
+          dependencies
+          automated pr 

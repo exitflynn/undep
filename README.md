@@ -1,6 +1,6 @@
 # UnDep
 
-UnDep is a dependency management tool for tracking and syncing indirect dependencies across projects. It helps you keep specific files in sync with their source repositories without requiring direct package dependencies.
+UnDep is a dependency management tool for tracking and syncing indirect dependencies across projects. It helps you keep specific files in sync with their source repositories without requiring direct package dependencies either manually or (more probably) via scheduled workflows.
 
 ## Why UnDep?
 
