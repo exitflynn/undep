@@ -14,10 +14,7 @@ class UpdateManager:
         if not target_path.exists():
             logger.error(f"Target file not found: {target_path}")
             return False
-            
-        # For Phase 1, we'll implement a simple file replacement
-        # In later phases, we'll add more sophisticated merge strategies
-        # Will be adding AST backends via LibCST (for Python codebases atleast) later on
+        
         try:
             # Backup the original file
             backup_path = target_path.with_suffix(target_path.suffix + '.bak')

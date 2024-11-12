@@ -19,7 +19,7 @@ def cli():
               help='Path to project directory (default: current directory)')
 def init(project: Optional[str]):
     """Initialize UnDep in the project directory"""
-    try:
+    try:    
         project_path = Path(project) if project else None
         config, project_root = ConfigLoader.load(project_path)
         click.echo(f"Loaded configuration from {project_root}")
@@ -39,6 +39,7 @@ def check():
             diff = monitor.check_updates(source)
             if diff:
                 click.echo(f"Updates available for {source.source.repo}:{source.source.path}")
+                breakpoint()
             else:
                 click.echo(f"No updates for {source.source.repo}:{source.source.path}")
     except Exception as e:
