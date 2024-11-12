@@ -36,10 +36,9 @@ def check():
         monitor = SourceMonitor(project_root)
         
         for source in config.sources:
-            diff = monitor.check_updates(source)
+            diff, _ = monitor.check_updates(source)
             if diff:
                 click.echo(f"Updates available for {source.source.repo}:{source.source.path}")
-                breakpoint()
             else:
                 click.echo(f"No updates for {source.source.repo}:{source.source.path}")
     except Exception as e:
@@ -51,15 +50,15 @@ def check():
 def update(yes: bool):
     """Apply available updates"""
     try:
-        config = ConfigLoader.load()
-        monitor = SourceMonitor()
+        config, project_root = ConfigLoader.load()
+        monitor = SourceMonitor(project_root)           
         updater = UpdateManager(Path.cwd())
         
         for source in config.sources:
-            diff = monitor.check_updates(source)
+            diff, content = monitor.check_updates(source)
             if diff:
                 if yes or click.confirm(f"Update {source.source.path}?"):
-                    if updater.apply_update(source, diff):
+                    if updater.apply_update(source, diff, content):
                         click.echo(f"Successfully updated {source.target.path}")
                     else:
                         click.echo(f"Failed to update {source.target.path}")

@@ -26,14 +26,13 @@ class SourceMonitor:
             logger.error(f"Failed to fetch file from GitHub: {e}")
             return None
 
-    def check_updates(self, source: SourceConfig) -> Optional[str]:
+    def check_updates(self, source: SourceConfig) -> tuple[Optional[str], Optional[str]]:
         # Get the local file path
         local_path = self.project_root / source.target.path
-        
         # Get current version from GitHub
         source_content = self._get_source_content(source.source.repo, source.source.path)
         if not source_content:
-            return None
+            return None, None
             
         # Compare with local file
         if local_path.exists():
@@ -50,11 +49,11 @@ class SourceMonitor:
                     tofile=f"{source.source.repo}/{source.source.path}",
                     lineterm=''
                 ))
-                return diff if diff else None
+                return (diff, source_content) if diff else (None, None)
         else:
             logger.warning(f"Local file not found: {local_path}")
             
-        return None
+        return None, None
 
     def apply_updates(self, source: SourceConfig) -> bool:
         """Apply updates from source to local file"""
